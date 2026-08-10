@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>फ्रेम इन गोवा — HH Goa 2026</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- crossorigin is load-bearing: without it the exporter can't read cssRules
+     off this sheet and throws SecurityError on every render -->
+<link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Baloo+2:wght@400;500;600;700;800&family=Kalam:wght@400;700&display=swap" rel="stylesheet" crossorigin="anonymous" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:   '#17110F',
+          cream: '#FFF7E8',
+          sun:   { 100: '#FFF4C2', 300: '#FFE066', 500: '#FFD23F', 700: '#E0A800' },
+          rose:  { 100: '#FFD6E8', 300: '#FF8FC0', 500: '#FF3F8E', 700: '#C9186A' },
+          neon:  { 100: '#D6FBE6', 300: '#8FF0B8', 500: '#22D07A', 700: '#0E8A4A' }
+        },
+        fontFamily: {
+          display: ['"Rozha One"', 'serif'],
+          body:    ['"Baloo 2"', 'system-ui', 'sans-serif'],
+          hand:    ['Kalam', 'cursive']
+        },
+        boxShadow: {
+          brut:    '6px 6px 0 #17110F',
+          brutSm:  '3px 3px 0 #17110F',
+          brutLg:  '10px 10px 0 #17110F',
+          brutPink:'6px 6px 0 #FF3F8E'
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { background: #FFF7E8; }
+
+  .grain::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: .35;
+    background-image: radial-gradient(#17110F 0.5px, transparent 0.5px);
+    background-size: 22px 22px;
+  }
+
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-track { animation: marquee 26s linear infinite; }
+
+  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(var(--r,0deg)); } 50% { transform: translateY(-10px) rotate(var(--r,0deg)); } }
+  .floaty { animation: floaty 5s ease-in-out infinite; }
+
+  .stripe {
+    background-image: repeating-linear-gradient(45deg, #FFD23F 0 7px, #FF3F8E 7px 14px);
+  }
+
+  input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type="range"]::-webkit-slider-runnable-track { height: 10px; background: #FFF4C2; border: 2px solid #17110F; border-radius: 999px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; margin-top: -8px; border-radius: 999px; background: #FF3F8E; border: 2px solid #17110F; cursor: pointer; }
+  input[type="range"]::-moz-range-track { height: 10px; background: #FFF4C2; border: 2px solid #17110F; border-radius: 999px; }
+  input[type="range"]::-moz-range-thumb { height: 18px; width: 18px; border-radius: 999px; background: #FF3F8E; border: 2px solid #17110F; cursor: pointer; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track, .floaty { animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="font-body text-ink antialiased overflow-x-hidden grain">
+
+<canvas id="bg-canvas" class="fixed inset-0 -z-10 h-full w-full"></canvas>
+
+<!-- ============ NAV ============ -->
+<header class="sticky top-0 z-50 border-b-4 border-ink bg-cream/85 backdrop-blur-md">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <a href="#top" class="flex items-center gap-2.5">
+      <span class="grid h-10 w-10 place-items-center rounded-xl border-[3px] border-ink bg-rose-500 font-display text-lg leading-none text-cream shadow-brutSm">HH</span>
+      <span class="font-display text-xl leading-none sm:text-2xl">गोवा&nbsp;’26</span>
+    </a>
+
+    <div class="hidden items-center gap-7 text-[15px] font-semibold md:flex">
+      <a href="#studio" class="transition hover:text-rose-700">स्टूडियो</a>
+      <a href="#kaise" class="transition hover:text-rose-700">कैसे बनेगा</a>
+      <a href="#formats" class="transition hover:text-rose-700">फॉर्मेट</a>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="hidden items-center gap-1.5 rounded-full border-[3px] border-ink bg-sun-300 px-3 py-1 text-xs font-extrabold sm:inline-flex">
+        <span class="h-2 w-2 rounded-full border border-ink bg-neon-500"></span>#FrameInGoa
+      </span>
+      <a href="#studio" class="rounded-xl border-[3px] border-ink bg-sun-500 px-3.5 py-2 text-sm font-extrabold shadow-brutSm transition hover:-translate-y-0.5 hover:shadow-brut active:translate-x-0.5 active:translate-y-0.5 active:shadow-none sm:px-5">
+        शुरू करो
+      </a>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20">
+  <div class="grid items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+
+    <div>
+      <div class="mb-5 inline-flex flex-wrap items-center gap-2">
+        <span class="rounded-full border-[3px] border-ink bg-rose-300 px-3 py-1 text-xs font-extrabold">बिना लॉगिन</span>
+        <span class="rounded-full border-[3px] border-ink bg-cream px-3 py-1 text-xs font-extrabold">HEIC भी चलेगा</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full border-[3px] border-ink bg-neon-300 px-3 py-1 text-xs font-extrabold">
+          <span class="h-1.5 w-1.5 rounded-full bg-neon-700"></span>~2 सेकंड
+        </span>
+      </div>
+
+      <h1 class="font-display text-[3.25rem] leading-[0.95] sm:text-7xl lg:text-8xl">
+        अपनी फोटो को
+        <span class="relative mt-1 inline-block">
+          <span class="absolute inset-x-0 bottom-1.5 -z-10 h-4 -rotate-1 bg-sun-500 sm:h-6"></span>
+          गोवा भेजो
+        </span>
+      </h1>
+
+      <p class="mt-6 max-w-lg text-lg font-medium leading-relaxed text-ink/80 sm:text-xl">
+        फोटो डालो, HH Goa 2026 का फ्रेम अपने आप लग जाएगा — फिर सीधा
+        <span class="font-bold text-rose-700">X पे शेयर</span>. न साइनअप, न वेटिंग, न crop की झंझट.
+      </p>
+
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <a href="#studio" class="rounded-2xl border-[3px] border-ink bg-rose-500 px-6 py-3.5 text-center text-lg font-extrabold shadow-brut transition hover:-translate-y-1 hover:shadow-brutLg active:translate-x-1 active:translate-y-1 active:shadow-none">
+          फोटो अपलोड करो →
+        </a>
+        <a href="#formats" class="rounded-2xl border-[3px] border-ink bg-cream px-6 py-3.5 text-center text-lg font-extrabold shadow-brutSm transition hover:-translate-y-1 hover:shadow-brut active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
+          फॉर्मेट देखो
+        </a>
+      </div>
+
+      <p class="mt-5 font-hand text-base text-ink/60">↓ माउस घुमाओ — background हिलेगा</p>
+    </div>
+
+    <!-- hero preview stack -->
+    <div class="relative mx-auto w-full max-w-md">
+      <span class="floaty absolute -left-2 top-2 z-20 rotate-[-8deg] rounded-full border-[3px] border-ink bg-sun-500 px-4 py-1.5 font-hand text-sm font-bold shadow-brutSm" style="--r:-8deg">सुसेगाद ✦</span>
+      <span class="floaty absolute -right-1 bottom-6 z-20 rotate-[7deg] rounded-full border-[3px] border-ink bg-rose-300 px-4 py-1.5 font-hand text-sm font-bold shadow-brutSm" style="--r:7deg; animation-delay:1.2s">एक क्लिक में</span>
+
+      <div class="rotate-[-2deg] rounded-[2rem] border-[4px] border-ink bg-sun-100 p-5 shadow-brutLg sm:p-7">
+        <!-- PFP frame preview -->
+        <div class="relative mx-auto aspect-square w-full max-w-[300px]">
+          <div class="absolute inset-0 rounded-full border-[4px] border-ink bg-rose-100"></div>
+          <div class="photo-slot absolute inset-[14px] grid place-items-center overflow-hidden rounded-full border-[3px] border-ink bg-cream bg-cover bg-center">
+            <svg class="h-14 w-14 text-ink/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="9" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke-linecap="round"/></svg>
+          </div>
+          <div class="pointer-events-none absolute inset-0 rounded-full border-[10px] border-rose-500"></div>
+          <div class="absolute inset-x-0 -bottom-3 flex justify-center">
+            <span class="rounded-full border-[3px] border-ink bg-sun-500 px-4 py-1 text-xs font-extrabold tracking-wide shadow-brutSm">HH GOA 2026</span>
+          </div>
+        </div>
+        <p class="mt-7 text-center font-display text-2xl">फ्रेम लगा, तैयार!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="relative z-10 overflow-hidden border-y-4 border-ink bg-neon-500 py-3">
+  <div class="marquee-track flex w-max gap-8 whitespace-nowrap font-display text-2xl text-ink sm:text-3xl">
+    <span class="flex gap-8"><span>#FrameInGoa</span><span class="text-cream">✦</span><span>बनाओ</span><span class="text-cream">✦</span><span>डाउनलोड करो</span><span class="text-cream">✦</span><span>शेयर करो</span><span class="text-cream">✦</span><span>HH GOA 2026</span><span class="text-cream">✦</span><span>बिना लॉगिन</span><span class="text-cream">✦</span></span>
+    <span class="flex gap-8" aria-hidden="true"><span>#FrameInGoa</span><span class="text-cream">✦</span><span>बनाओ</span><span class="text-cream">✦</span><span>डाउनलोड करो</span><span class="text-cream">✦</span><span>शेयर करो</span><span class="text-cream">✦</span><span>HH GOA 2026</span><span class="text-cream">✦</span><span>बिना लॉगिन</span><span class="text-cream">✦</span></span>
+  </div>
+</div>
+
+<!-- ============ STUDIO ============ -->
+<section id="studio" class="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
+  <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <span class="font-hand text-lg text-rose-700">स्टूडियो</span>
+      <h2 class="font-display text-4xl leading-tight sm:text-6xl">यहीं बनेगा तुम्हारा बैज</h2>
+    </div>
+    <p class="max-w-xs text-base font-medium text-ink/70">सब कुछ browser में — फोटो कहीं upload नहीं होती जब तक तुम share न करो.</p>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)]">
+
+    <!-- ---- controls ---- -->
+    <div class="rounded-[2rem] border-[4px] border-ink bg-cream p-5 shadow-brut sm:p-7">
+
+      <!-- format toggle -->
+      <p class="mb-2.5 text-sm font-extrabold uppercase tracking-wider text-ink/60">फॉर्मेट चुनो</p>
+      <div class="mb-7 grid grid-cols-3 gap-2.5">
+        <button data-format="pfp" class="format-btn rounded-2xl border-[3px] border-ink bg-sun-500 px-3 py-3.5 text-left shadow-brutSm transition">
+          <span class="block font-display text-lg leading-tight">फ्रेम</span>
+          <span class="block text-[11px] font-semibold text-ink/70">PFP</span>
+        </button>
+        <button data-format="solo" class="format-btn rounded-2xl border-[3px] border-ink bg-cream px-3 py-3.5 text-left shadow-brutSm transition">
+          <span class="block font-display text-lg leading-tight">सोलो ID</span>
+          <span class="block text-[11px] font-semibold text-ink/70">1 फोटो</span>
+        </button>
+        <button data-format="team" class="format-btn rounded-2xl border-[3px] border-ink bg-cream px-3 py-3.5 text-left shadow-brutSm transition">
+          <span class="block font-display text-lg leading-tight">टीम ID</span>
+          <span class="block text-[11px] font-semibold text-ink/70">3 तक</span>
+        </button>
+      </div>
+
+      <!-- dropzone -->
+      <div class="mb-2.5 flex items-center justify-between">
+        <p class="text-sm font-extrabold uppercase tracking-wider text-ink/60">फोटो डालो</p>
+        <span id="photo-count" class="rounded-full border-2 border-ink bg-cream px-2.5 py-0.5 font-mono text-xs font-bold">0 / 1</span>
+      </div>
+      <label id="dropzone" for="file-input" class="group mb-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-[3px] border-dashed border-ink bg-sun-100 px-6 py-10 text-center transition hover:bg-sun-300">
+        <span class="grid h-12 w-12 place-items-center rounded-xl border-[3px] border-ink bg-rose-500 shadow-brutSm transition group-hover:rotate-6">
+          <svg class="h-6 w-6 text-cream" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V5M6 11l6-6 6 6"/><path d="M4 19h16"/></svg>
+        </span>
+        <span id="dropzone-title" class="font-display text-2xl">फोटो यहाँ खींचो</span>
+        <span id="dropzone-hint" class="text-sm font-semibold text-ink/60">JPG · PNG · HEIC — कोई भी crop चलेगा</span>
+        <input id="file-input" type="file" accept="image/*,.heic,.heif" class="hidden" />
+      </label>
+
+      <!-- uploaded photo tray -->
+      <div id="photo-tray" class="mb-7 hidden flex-wrap gap-2"></div>
+
+      <!-- adjust -->
+      <p class="mb-2.5 text-sm font-extrabold uppercase tracking-wider text-ink/60">एडजस्ट करो</p>
+      <div class="mb-7 space-y-4 rounded-2xl border-[3px] border-ink bg-sun-100 p-4">
+        <div>
+          <div class="mb-2 flex items-center justify-between text-sm font-bold">
+            <label for="zoom">ज़ूम</label><span id="zoom-out" class="font-mono">1.0×</span>
+          </div>
+          <input id="zoom" type="range" min="100" max="250" value="100" step="5" class="w-full" />
+        </div>
+        <div>
+          <div class="mb-2 flex items-center justify-between text-sm font-bold">
+            <label for="rotate">घुमाओ</label><span id="rotate-out" class="font-mono">0°</span>
+          </div>
+          <input id="rotate" type="range" min="-30" max="30" value="0" step="1" class="w-full" />
+        </div>
+      </div>
+
+      <!-- fields: solo -->
+      <div id="solo-fields">
+        <p class="mb-2.5 text-sm font-extrabold uppercase tracking-wider text-ink/60">डिटेल्स</p>
+        <div class="mb-7 grid gap-3">
+          <div>
+            <label for="f-name" class="mb-1 block text-sm font-bold">नाम</label>
+            <input id="f-name" type="text" value="आदित्य शर्मा" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
+          </div>
+          <div>
+            <label for="f-role" class="mb-1 block text-sm font-bold">स्टैक / रोल</label>
+            <input id="f-role" type="text" value="Full-stack · React / Node" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
+          </div>
+          <div>
+            <label for="f-title" class="mb-1 block text-sm font-bold">बिल्डर टाइटल</label>
+            <div class="flex gap-2">
+              <input id="f-title" type="text" value="देर रात का कोडर" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
+              <button id="dice" type="button" title="नया टाइटल" class="shrink-0 rounded-xl border-[3px] border-ink bg-rose-300 px-4 font-extrabold shadow-brutSm transition hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">🎲</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- fields: team -->
+      <div id="team-fields" class="hidden">
+        <p class="mb-2.5 text-sm font-extrabold uppercase tracking-wider text-ink/60">टीम डिटेल्स</p>
+        <div class="mb-7 grid gap-3">
+          <div>
+            <label for="f-team" class="mb-1 block text-sm font-bold">टीम का नाम</label>
+            <input id="f-team" type="text" value="सुसेगाद स्क्वाड" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
+          </div>
+          <div>
+            <label for="f-team-role" class="mb-1 block text-sm font-bold">टीम स्टैक</label>
+            <input id="f-team-role" type="text" value="Next.js · Rust · बहुत सारी कॉफ़ी" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
+          </div>
+          <div id="member-fields" class="grid gap-2"></div>
+          <p id="member-empty" class="rounded-xl border-[3px] border-dashed border-ink/30 px-3.5 py-3 text-center text-xs font-bold text-ink/45">
+            फोटो डालो, हर मेंबर का नाम यहाँ आ जाएगा
+          </p>
+        </div>
+      </div>
+
+      <!-- actions -->
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <button id="btn-download" type="button" class="flex-1 rounded-2xl border-[3px] border-ink bg-sun-500 px-5 py-3.5 text-lg font-extrabold shadow-brut transition hover:-translate-y-1 hover:shadow-brutLg active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-60">
+          ⬇ PNG डाउनलोड
+        </button>
+        <button id="btn-share" type="button" class="flex-1 rounded-2xl border-[3px] border-ink bg-ink px-5 py-3.5 text-lg font-extrabold text-cream shadow-brutPink transition hover:-translate-y-1 active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-60">
+          𝕏 पे शेयर करो
+        </button>
+      </div>
+      <p id="action-status" role="status" aria-live="polite" class="mt-3 text-center text-xs font-semibold text-ink/50">कैप्शन + #FrameInGoa पहले से भरा मिलेगा</p>
+    </div>
+
+    <!-- ---- preview ---- -->
+    <div class="rounded-[2rem] border-[4px] border-ink bg-ink p-5 shadow-brut sm:p-7">
+      <div class="mb-5 flex items-center justify-between">
+        <span class="font-display text-2xl text-cream">लाइव प्रीव्यू</span>
+        <span class="flex items-center gap-1.5 rounded-full border-2 border-neon-500/40 px-3 py-1 font-mono text-xs font-bold text-neon-300">
+          <span class="h-2 w-2 animate-pulse rounded-full bg-neon-500"></span> 1080 × 1080
+        </span>
+      </div>
+
+      <div class="stripe rounded-2xl p-2.5">
+        <div class="grid place-items-center rounded-xl bg-cream px-4 py-8 sm:py-12">
+
+          <!-- PFP output -->
+          <div id="preview-pfp" class="relative aspect-square w-full max-w-[320px]">
+            <div class="absolute inset-0 rounded-full border-[4px] border-ink bg-sun-300"></div>
+            <div class="photo-slot absolute inset-[16px] grid place-items-center overflow-hidden rounded-full border-[3px] border-ink bg-rose-100 bg-cover bg-center">
+              <svg class="h-16 w-16 text-ink/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="9" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke-linecap="round"/></svg>
+            </div>
+            <div class="pointer-events-none absolute inset-0 rounded-full border-[12px] border-rose-500"></div>
+            <span class="absolute -right-2 top-3 rotate-12 rounded-full border-[3px] border-ink bg-cream px-3 py-1 font-hand text-xs font-bold shadow-brutSm">गोवा ’26</span>
+            <div class="absolute inset-x-0 -bottom-3.5 flex justify-center">
+              <span class="rounded-full border-[3px] border-ink bg-sun-500 px-5 py-1.5 text-sm font-extrabold tracking-wide shadow-brutSm">HH GOA 2026</span>
+            </div>
+          </div>
+
+          <!-- ID card output -->
+          <div id="preview-card" class="hidden w-full max-w-[300px] overflow-hidden rounded-2xl border-[4px] border-ink shadow-brut">
+            <div class="flex items-center justify-between bg-rose-500 px-4 py-3">
+              <div>
+                <p class="font-display text-lg leading-none text-cream">HH गोवा ’26</p>
+                <p class="text-[10px] font-extrabold tracking-[0.2em] text-cream/80">BUILDER PASS</p>
+              </div>
+              <span class="rounded-md border-2 border-ink bg-neon-500 px-2 py-0.5 text-[10px] font-extrabold">2026</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-3 bg-sun-100 px-5 py-6">
+              <div class="photo-slot h-24 w-24 overflow-hidden rounded-xl border-[3px] border-ink bg-cream bg-cover bg-center">
+                <div class="grid h-full w-full place-items-center">
+                  <svg class="h-9 w-9 text-ink/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="9" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <p id="out-name" class="text-center font-display text-2xl leading-tight">आदित्य शर्मा</p>
+              <p id="out-role" class="-mt-2 text-center text-xs font-bold text-ink/60">Full-stack · React / Node</p>
+              <span id="out-title" class="rounded-full border-[3px] border-ink bg-rose-300 px-3.5 py-1 text-xs font-extrabold">देर रात का कोडर</span>
+            </div>
+
+            <div class="flex items-center justify-between border-t-[3px] border-ink bg-sun-500 px-4 py-2">
+              <span class="flex items-center gap-1.5 text-[11px] font-extrabold">
+                <span class="h-1.5 w-1.5 rounded-full border border-ink bg-neon-500"></span>#FrameInGoa
+              </span>
+              <span class="flex gap-[3px]">
+                <i class="block h-3.5 w-[3px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i><i class="block h-3.5 w-[4px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i><i class="block h-3.5 w-[3px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i>
+              </span>
+            </div>
+          </div>
+
+          <!-- Team card output — contents rendered by ui.js, one layout per photo count -->
+          <div id="preview-team" class="hidden w-full max-w-[320px] overflow-hidden rounded-2xl border-[4px] border-ink shadow-brut"></div>
+
+        </div>
+      </div>
+
+      <p class="mt-5 text-center text-sm font-semibold text-cream/60">जो दिख रहा है वही डाउनलोड होगा — असली PNG फाइल</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FORMATS ============ -->
+<section id="formats" class="relative z-10 border-y-4 border-ink bg-rose-100 py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <span class="font-hand text-lg text-rose-700">दो फॉर्मेट</span>
+    <h2 class="mb-10 font-display text-4xl leading-tight sm:text-6xl">जो पसंद आए वो बनाओ</h2>
+
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="rounded-[2rem] border-[4px] border-ink bg-cream p-6 shadow-brut sm:p-8">
+        <span class="mb-4 inline-block rounded-full border-[3px] border-ink bg-sun-500 px-3 py-1 text-xs font-extrabold">फॉर्मेट A</span>
+        <h3 class="font-display text-3xl">PFP फ्रेम</h3>
+        <p class="mt-2 text-base font-medium leading-relaxed text-ink/70">तुम्हारी फोटो बीच में, गोवा ब्रांडिंग चारों तरफ. सीधा X की प्रोफाइल पिक्चर बना लो.</p>
+        <ul class="mt-4 space-y-1.5 text-sm font-semibold">
+          <li><span class="mr-1.5 text-neon-700">✦</span>गोल फ्रेम, 1080×1080</li>
+          <li><span class="mr-1.5 text-neon-700">✦</span>फोटो pan + zoom कर सकते हो</li>
+          <li><span class="mr-1.5 text-neon-700">✦</span>किसी भी aspect ratio से बनेगा</li>
+        </ul>
+      </div>
+
+      <div class="rounded-[2rem] border-[4px] border-ink bg-cream p-6 shadow-brut sm:p-8">
+        <span class="mb-4 inline-block rounded-full border-[3px] border-ink bg-rose-300 px-3 py-1 text-xs font-extrabold">फॉर्मेट B</span>
+        <h3 class="font-display text-3xl">बिल्डर ID कार्ड</h3>
+        <p class="mt-2 text-base font-medium leading-relaxed text-ink/70">फोटो + नाम + स्टैक + एक मज़ेदार बिल्डर टाइटल — पूरा इवेंट बैज, पोस्ट करने लायक.</p>
+        <ul class="mt-4 space-y-1.5 text-sm font-semibold">
+          <li><span class="mr-1.5 text-neon-700">✦</span>बैज लेआउट, शेयर के लिए बना</li>
+          <li><span class="mr-1.5 text-neon-700">✦</span>टाइटल अपने आप generate</li>
+          <li><span class="mr-1.5 text-neon-700">✦</span>नाम हिंदी या English दोनों में</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW ============ -->
+<section id="kaise" class="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
+  <span class="font-hand text-lg text-rose-700">तीन स्टेप</span>
+  <h2 class="mb-10 font-display text-4xl leading-tight sm:text-6xl">कैसे बनेगा</h2>
+
+  <div class="grid gap-6 sm:grid-cols-3">
+    <div class="rounded-[2rem] border-[4px] border-ink bg-sun-300 p-6 shadow-brut">
+      <span class="font-display text-6xl leading-none">१</span>
+      <h3 class="mt-3 font-display text-2xl">फोटो चुनो</h3>
+      <p class="mt-1.5 text-sm font-semibold text-ink/70">गैलरी से कुछ भी. iPhone की HEIC भी.</p>
+    </div>
+    <div class="rounded-[2rem] border-[4px] border-ink bg-rose-300 p-6 shadow-brut">
+      <span class="font-display text-6xl leading-none">२</span>
+      <h3 class="mt-3 font-display text-2xl">फ्रेम लगेगा</h3>
+      <p class="mt-1.5 text-sm font-semibold text-ink/70">browser में ही, 2 सेकंड में तैयार.</p>
+    </div>
+    <div class="rounded-[2rem] border-[4px] border-ink bg-cream p-6 shadow-brut">
+      <span class="font-display text-6xl leading-none text-neon-700">३</span>
+      <h3 class="mt-3 font-display text-2xl">शेयर करो</h3>
+      <p class="mt-1.5 text-sm font-semibold text-ink/70">डाउनलोड या सीधा X — कैप्शन भरा हुआ.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHOWCASE / 3D ============ -->
+<section id="showcase" class="relative z-10 border-t-4 border-ink bg-sun-100 py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)]">
+
+      <div>
+        <span class="font-hand text-lg text-rose-700">थोड़ा घुमाओ</span>
+        <h2 class="font-display text-4xl leading-[1.05] sm:text-6xl">
+          बैज बन गया,<br />
+          अब <span class="relative inline-block">
+            <span class="absolute inset-x-0 bottom-1 -z-10 h-4 -rotate-1 bg-neon-300 sm:h-5"></span>गोवा
+          </span> निकलो
+        </h2>
+
+        <p class="mt-5 max-w-md text-lg font-medium leading-relaxed text-ink/75">
+          फ्रेम लग गया, शेयर भी हो गया — बाकी बस पहुँचना है. माउस घुमाओ,
+          गाड़ी भी साथ घूमेगी. सड़कें वहीं हैं, तुम कब आ रहे हो?
+        </p>
+
+        <div class="mt-6 flex flex-wrap gap-2">
+          <span class="rounded-full border-[3px] border-ink bg-cream px-3 py-1 text-xs font-extrabold">माउस पैरालैक्स</span>
+          <span class="rounded-full border-[3px] border-ink bg-cream px-3 py-1 text-xs font-extrabold">hover पे घूमेगी</span>
+        </div>
+
+        <p class="mt-5 font-hand text-base text-ink/55">↘ गाड़ी पे माउस ले जाओ</p>
+      </div>
+
+      <div id="model-stage" class="relative aspect-square w-full">
+        <canvas id="model-canvas" class="h-full w-full"></canvas>
+
+        <div id="model-loading" class="absolute inset-0 grid place-items-center">
+          <span class="flex items-center gap-2 rounded-full border-[3px] border-ink bg-cream px-4 py-1.5 text-sm font-extrabold">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-neon-500"></span>लोड हो रही है…
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative z-10 border-t-4 border-ink bg-ink px-4 py-5 text-cream sm:px-6">
+  <div class="mx-auto flex max-w-7xl flex-col items-center gap-3 sm:flex-row sm:justify-between">
+    <p class="font-display text-2xl leading-none">गोवा में मिलते हैं</p>
+    <div class="flex items-center gap-4">
+      <p class="hidden text-xs font-semibold text-cream/50 sm:block">HH Goa 2026 · शॉर्टलिस्टिंग टास्क</p>
+      <span class="inline-flex items-center gap-1.5 rounded-full border-2 border-neon-500 px-3 py-1 text-xs font-extrabold text-neon-500">
+        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-500"></span>#FrameInGoa
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- offscreen 1080x1080 canvas the exporter composes into.
+     The offset lives on the holder: html-to-image copies the captured node's own
+     position into its clone, so #export-stage must stay statically positioned. -->
+<div id="export-holder" aria-hidden="true" style="position:fixed;left:-10000px;top:0;width:1080px;height:1080px;overflow:hidden;pointer-events:none;">
+  <div id="export-stage" style="width:1080px;height:1080px;display:grid;place-items:center;overflow:hidden;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="scene.js"></script>
+<script type="module" src="model-viewer.js"></script>
+<script src="ui.js"></script>
+<script src="export.js"></script>
+</body>
+</html>

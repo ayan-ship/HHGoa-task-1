@@ -1,0 +1,140 @@
+/* Real image export + share.
+   Snapshots the live preview node into a 1080x1080 PNG, then either hands it
+   to the OS share sheet (mobile) or downloads it alongside a pre-filled tweet. */
+
+(function () {
+  const $ = (s) => document.querySelector(s);
+
+  const SIZE = 1080;
+  /* PFP fills more of the square — it gets cropped to a circle by X.
+     Its 48px still clears the badge and sticker that overhang the node's box. */
+  const PAD = { 'preview-pfp': 48, 'preview-card': 90, 'preview-team': 90 };
+  const FILENAME = 'hh-goa-2026.png';
+  const CAPTION = 'मेरा HH Goa 2026 बैज तैयार है ✦ बना लो अपना भी — #FrameInGoa';
+  const INTENT = 'https://twitter.com/intent/tweet?text=';
+
+  /* background behind the card in the exported square, per format */
+  const BG = { 'preview-pfp': '#FFF7E8', 'preview-card': '#FFF7E8', 'preview-team': '#FFF7E8' };
+
+  const statusEl = $('#action-status');
+  const btnDownload = $('#btn-download');
+  const btnShare = $('#btn-share');
+
+  let busy = false;
+
+  function status(msg) { statusEl.textContent = msg; }
+
+  function setBusy(on, msg) {
+    busy = on;
+    btnDownload.disabled = on;
+    btnShare.disabled = on;
+    if (msg) status(msg);
+  }
+
+  function activeNode() {
+    return document.querySelector(
+      '#preview-pfp:not(.hidden), #preview-card:not(.hidden), #preview-team:not(.hidden)'
+    );
+  }
+
+  /* Clone the visible card into the offscreen stage, scaled to fill the square. */
+  function mount(src) {
+    const stage = $('#export-stage');
+    const rect = src.getBoundingClientRect();
+    const pad = PAD[src.id] ?? 90;
+    const k = Math.min((SIZE - pad * 2) / rect.width, (SIZE - pad * 2) / rect.height);
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText =
+      `width:${rect.width}px;height:${rect.height}px;` +
+      `transform:scale(${k});transform-origin:center center;`;
+
+    const clone = src.cloneNode(true);
+    clone.classList.remove('hidden');
+    wrap.appendChild(clone);
+
+    stage.style.background = BG[src.id] || '#FFF7E8';
+    stage.replaceChildren(wrap);
+    return stage;
+  }
+
+  async function renderBlob() {
+    const src = activeNode();
+    if (!src) throw new Error('no preview');
+
+    const stage = mount(src);
+    try {
+      /* two passes: the first warms the font/image inlining cache, the second
+         renders reliably — a known html-to-image quirk with webfonts */
+      await htmlToImage.toPng(stage, { width: SIZE, height: SIZE, cacheBust: false });
+      return await htmlToImage.toBlob(stage, {
+        width: SIZE,
+        height: SIZE,
+        pixelRatio: 1,
+        cacheBust: false
+      });
+    } finally {
+      stage.replaceChildren();
+    }
+  }
+
+  function saveBlob(blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = FILENAME;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  /* ---------- download ---------- */
+  btnDownload.addEventListener('click', async () => {
+    if (busy) return;
+    setBusy(true, 'बन रहा है…');
+    try {
+      const blob = await renderBlob();
+      saveBlob(blob);
+      status(`डाउनलोड हो गया — ${SIZE}×${SIZE} PNG`);
+    } catch (err) {
+      console.error(err);
+      status('कुछ गड़बड़ हो गई, दोबारा कोशिश करो');
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  /* ---------- share to X ----------
+     Web Share attaches the actual file (mobile). Everywhere else the tweet
+     composer can't take an image from a URL, so we hand over the file and
+     open the composer with the caption already written. */
+  btnShare.addEventListener('click', async () => {
+    if (busy) return;
+    setBusy(true, 'बन रहा है…');
+    try {
+      const blob = await renderBlob();
+      const file = new File([blob], FILENAME, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], text: CAPTION });
+          status('शेयर हो गया');
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') { status('कैंसिल कर दिया'); return; }
+          /* otherwise fall through to the desktop path */
+        }
+      }
+
+      saveBlob(blob);
+      window.open(INTENT + encodeURIComponent(CAPTION), '_blank', 'noopener,noreferrer');
+      status('इमेज डाउनलोड हो गई — X पे बस attach कर दो');
+    } catch (err) {
+      console.error(err);
+      status('कुछ गड़बड़ हो गई, दोबारा कोशिश करो');
+    } finally {
+      setBusy(false);
+    }
+  });
+})();
