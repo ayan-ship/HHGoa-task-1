@@ -11,103 +11,76 @@
 
   const state = {
     format: 'pfp',
-    photos: [],                                   /* [{ url, file }] */
-    members: ['टीम मेंबर 1', 'टीम मेंबर 2', 'टीम मेंबर 3']
+    photos: []                                    /* [{ url, file }] */
   };
 
   const PERSON_SVG =
     '<svg class="h-1/3 w-1/3 text-ink/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="9" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke-linecap="round"/></svg>';
 
   /* ===================================================================
-     TEAM CARD LAYOUTS
-     One renderer per photo count. Each returns the FULL innerHTML of
-     #preview-team, so a layout can change the header and footer too,
-     not just the photo arrangement.
-
-     `d` = { photos: [{url}], team, teamRole, members: [names] }
-     `photoTile(url, i, classes)` renders one photo (or an empty slot).
-
-     >>> These three are placeholders. Swap the bodies when the real
-     >>> 1 / 2 / 3-member designs land. Nothing else needs to change —
-     >>> renderTeam() picks the right one off the photo count.
+     TEAM CARD LAYOUTS — Frame-7/8/9 badge art with photos + text laid on
+     top, same technique as the solo card. Hole/box rects are percentages
+     of the card measured directly off each frame asset's transparent
+     cutouts, so they track the art exactly regardless of render size.
      =================================================================== */
 
-  const header = (label) => `
-    <div class="flex items-center justify-between bg-rose-500 px-4 py-3">
-      <div>
-        <p class="font-display text-lg leading-none text-cream">HH गोवा ’26</p>
-        <p class="text-[10px] font-extrabold tracking-[0.2em] text-cream/80">${esc(label)}</p>
-      </div>
-      <span class="rounded-md border-2 border-ink bg-neon-500 px-2 py-0.5 text-[10px] font-extrabold">2026</span>
-    </div>`;
+  const TEAM_ART = {
+    1: {
+      asset: 'assets/frame-team-1.png', ratio: '1200/1299',
+      holes: [{ left: 26.58, top: 15.99, width: 50.39, height: 50.19 }],
+      box: { left: 17.29, top: 66.59, width: 69.34, height: 17.7 }
+    },
+    2: {
+      asset: 'assets/frame-team-2.png', ratio: '1400/1050',
+      holes: [
+        { left: 15.5, top: 14.76, width: 32.39, height: 51.57 },
+        { left: 51.83, top: 14.01, width: 32.39, height: 51.57 }
+      ],
+      box: { left: 25.62, top: 64.3, width: 48.03, height: 17.7 }
+    },
+    3: {
+      asset: 'assets/frame-team-3.png', ratio: '1400/1050',
+      holes: [
+        { left: 6.72, top: 22.53, width: 27.35, height: 48.5 },
+        { left: 36.5, top: 22.53, width: 27.35, height: 41.37 },
+        { left: 66.29, top: 22.43, width: 27.35, height: 48.5 }
+      ],
+      box: { left: 25.62, top: 64.3, width: 48.03, height: 17.7 }
+    }
+  };
 
-  const footer = () => `
-    <div class="flex items-center justify-between border-t-[3px] border-ink bg-sun-500 px-4 py-2">
-      <span class="flex items-center gap-1.5 text-[11px] font-extrabold">
-        <span class="h-1.5 w-1.5 rounded-full border border-ink bg-neon-500"></span>#FrameInGoa
-      </span>
-      <span class="flex gap-[3px]">
-        <i class="block h-3.5 w-[3px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i><i class="block h-3.5 w-[4px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i><i class="block h-3.5 w-[3px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i>
-      </span>
-    </div>`;
+  const rectStyle = (r) => `left:${r.left}%;top:${r.top}%;width:${r.width}%;height:${r.height}%;`;
 
-  /* A filled tile is draggable: object-position does the panning, which clamps
-     itself to the cover-crop overflow so the photo can never leave a gap. */
-  function photoTile(photo, idx, cls) {
+  /* A filled hole is draggable: object-position does the panning, which
+     clamps itself to the cover-crop overflow so the photo can't leave a gap. */
+  function photoHole(photo, idx, rect) {
     return photo
-      ? `<div class="photo-slot cursor-grab touch-none overflow-hidden rounded-xl border-[3px] border-ink bg-cream ${cls}" data-idx="${idx}">
+      ? `<div class="photo-slot absolute cursor-grab touch-none overflow-hidden bg-cream" data-idx="${idx}" style="${rectStyle(rect)}">
            <img src="${esc(photo.url)}" alt="" draggable="false"
              class="photo-img h-full w-full origin-center select-none object-cover"
              style="object-position:${photo.px}% ${photo.py}%" />
          </div>`
-      : `<div class="photo-slot grid place-items-center overflow-hidden rounded-xl border-[3px] border-ink bg-cream ${cls}">${PERSON_SVG}</div>`;
+      : `<div class="photo-slot absolute overflow-hidden bg-cream" style="${rectStyle(rect)}">
+           <div class="grid h-full w-full place-items-center">${PERSON_SVG}</div>
+         </div>`;
   }
 
-  const nameTag = (text) =>
-    `<p class="mt-1.5 w-full truncate text-center text-[11px] font-bold text-ink/70">${esc(text)}</p>`;
+  function teamCardHTML(art, d) {
+    return `<div class="relative w-full" style="aspect-ratio:${art.ratio};">
+      ${art.holes.map((rect, i) => photoHole(d.photos[i], i, rect)).join('')}
+      <img src="${art.asset}" alt="" draggable="false"
+        class="pointer-events-none absolute inset-0 h-full w-full select-none" />
+      <div class="absolute flex flex-col items-center justify-center gap-1 px-3 text-center" style="${rectStyle(art.box)}">
+        <p class="line-clamp-1 font-display text-lg leading-tight text-ink sm:text-xl">${esc(d.team)}</p>
+        <p class="line-clamp-2 font-hand text-xs font-bold leading-tight text-ink/70 sm:text-sm">${esc(d.teamRole)}</p>
+      </div>
+    </div>`;
+  }
 
   const TEAM_LAYOUTS = {
-    /* ---------- LAYOUT: 1 MEMBER ---------- */
-    1: (d) => header('TEAM PASS') + `
-      <div class="flex flex-col items-center gap-3 bg-sun-100 px-5 py-6">
-        <div class="flex flex-col items-center">
-          ${photoTile(d.photos[0], 0, 'h-28 w-28')}
-          ${nameTag(d.members[0])}
-        </div>
-        <p class="text-center font-display text-2xl leading-tight">${esc(d.team)}</p>
-        <p class="-mt-2 text-center text-xs font-bold text-ink/60">${esc(d.teamRole)}</p>
-        <span class="rounded-full border-[3px] border-ink bg-rose-300 px-3.5 py-1 text-xs font-extrabold">1 मेंबर</span>
-      </div>` + footer(),
-
-    /* ---------- LAYOUT: 2 MEMBERS ---------- */
-    2: (d) => header('TEAM PASS') + `
-      <div class="flex flex-col items-center gap-3 bg-sun-100 px-5 py-6">
-        <div class="flex w-full items-start justify-center gap-3">
-          ${[0, 1].map((i) => `
-            <div class="flex min-w-0 flex-1 flex-col items-center">
-              ${photoTile(d.photos[i], i, 'aspect-square w-full')}
-              ${nameTag(d.members[i])}
-            </div>`).join('')}
-        </div>
-        <p class="text-center font-display text-2xl leading-tight">${esc(d.team)}</p>
-        <p class="-mt-2 text-center text-xs font-bold text-ink/60">${esc(d.teamRole)}</p>
-        <span class="rounded-full border-[3px] border-ink bg-rose-300 px-3.5 py-1 text-xs font-extrabold">2 मेंबर</span>
-      </div>` + footer(),
-
-    /* ---------- LAYOUT: 3 MEMBERS ---------- */
-    3: (d) => header('TEAM PASS') + `
-      <div class="flex flex-col items-center gap-3 bg-sun-100 px-4 py-6">
-        <div class="flex w-full items-start justify-center gap-2">
-          ${[0, 1, 2].map((i) => `
-            <div class="flex min-w-0 flex-1 flex-col items-center">
-              ${photoTile(d.photos[i], i, 'aspect-square w-full')}
-              ${nameTag(d.members[i])}
-            </div>`).join('')}
-        </div>
-        <p class="text-center font-display text-2xl leading-tight">${esc(d.team)}</p>
-        <p class="-mt-2 text-center text-xs font-bold text-ink/60">${esc(d.teamRole)}</p>
-        <span class="rounded-full border-[3px] border-ink bg-rose-300 px-3.5 py-1 text-xs font-extrabold">3 मेंबर</span>
-      </div>` + footer()
+    1: (d) => teamCardHTML(TEAM_ART[1], d),
+    2: (d) => teamCardHTML(TEAM_ART[2], d),
+    3: (d) => teamCardHTML(TEAM_ART[3], d)
   };
 
   /* =================== format switching =================== */
@@ -231,32 +204,13 @@
     $('#btn-camera').classList.toggle('flex', !full);
   }
 
-  /* one name input per uploaded photo */
-  function renderMemberFields() {
-    const wrap = $('#member-fields');
-    const n = state.photos.length;
-
-    $('#member-empty').classList.toggle('hidden', n > 0);
-    wrap.innerHTML = Array.from({ length: n }, (_, i) => `
-      <div>
-        <label class="mb-1 block text-sm font-bold">मेंबर ${i + 1} का नाम</label>
-        <input type="text" data-member="${i}" value="${esc(state.members[i] ?? '')}"
-          class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
-      </div>`).join('');
-
-    wrap.querySelectorAll('[data-member]').forEach((input) => {
-      input.addEventListener('input', () => {
-        state.members[Number(input.dataset.member)] = input.value;
-        renderTeam();
-      });
-    });
-  }
-
   /* =================== camera =================== */
 
   const cam = {
     modal: $('#cam-modal'),
+    stage: $('#cam-stage'),
     video: $('#cam-video'),
+    overlay: $('#cam-frame-overlay'),
     error: $('#cam-error'),
     count: $('#cam-count'),
     shoot: $('#cam-shoot'),
@@ -278,12 +232,21 @@
       : 'One photo is all you need';
   }
 
+  /* solo shoots straight into the badge shape, so show the real frame over
+     the live feed — the square crop other formats use would be misleading here */
+  function syncCamFrame() {
+    const isSolo = state.format === 'solo';
+    cam.stage.style.aspectRatio = isSolo ? '3/4' : '1/1';
+    cam.overlay.classList.toggle('hidden', !isSolo);
+  }
+
   async function openCamera() {
     if (camFull()) return;
     cam.modal.classList.remove('hidden');
     cam.modal.classList.add('flex');
     cam.error.classList.add('hidden');
     cam.error.classList.remove('grid');
+    syncCamFrame();
     syncCam();
 
     try {
@@ -449,14 +412,12 @@
     $('#preview-team').innerHTML = render({
       photos: state.photos,
       team: $('#f-team').value,
-      teamRole: $('#f-team-role').value,
-      members: state.members
+      teamRole: $('#f-team-role').value
     });
   }
 
   function renderAll() {
     renderTray();
-    renderMemberFields();
     renderSingleSlots();
     renderTeam();
     applyTransform();
@@ -479,26 +440,12 @@
 
   /* =================== field binding =================== */
 
-  [['#f-name', '#out-name'], ['#f-role', '#out-role'], ['#f-title', '#out-title']].forEach(([from, to]) => {
+  [['#f-name', '#out-name'], ['#f-role', '#out-role']].forEach(([from, to]) => {
     $(from).addEventListener('input', () => { $(to).textContent = $(from).value || '—'; });
   });
 
   ['#f-team', '#f-team-role'].forEach((sel) => {
     $(sel).addEventListener('input', renderTeam);
-  });
-
-  /* =================== builder title dice =================== */
-
-  const TITLES = [
-    'देर रात का कोडर', 'बग का दुश्मन', 'कॉफ़ी से चलने वाला',
-    'डिप्लॉय मास्टर', 'CSS जादूगर', 'लास्ट-मिनट शिपर',
-    'टर्मिनल का राजा', 'susegaad बिल्डर', 'रिफैक्टर पंडित'
-  ];
-  let seen = 0;
-  $('#dice').addEventListener('click', () => {
-    seen = (seen + 1) % TITLES.length;
-    $('#f-title').value = TITLES[seen];
-    $('#out-title').textContent = TITLES[seen];
   });
 
   setFormat('pfp');

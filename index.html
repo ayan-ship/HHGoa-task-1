@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>frame इन गोवा — HH Goa 2026</title>
 
+<!-- lets X/WhatsApp/etc. render an image preview whenever this link is
+     shared, since the intent URL itself can't carry the exported photo -->
+<meta property="og:url" content="https://hh-goa-task-1-three.vercel.app/" />
+<meta property="og:title" content="frame इन गोवा — HH Goa 2026" />
+<meta property="og:description" content="अपनी photo को Goa भेजो — HH Goa 2026 का badge बनाओ, बिना login." />
+<meta property="og:image" content="https://hh-goa-task-1-three.vercel.app/assets/frame-solo.png" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="frame इन गोवा — HH Goa 2026" />
+<meta name="twitter:description" content="अपनी photo को Goa भेजो — HH Goa 2026 का badge बनाओ, बिना login." />
+<meta name="twitter:image" content="https://hh-goa-task-1-three.vercel.app/assets/frame-solo.png" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <!-- crossorigin is load-bearing: without it the exporter can't read cssRules
@@ -257,15 +269,8 @@
             <input id="f-name" type="text" value="आदित्य शर्मा" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
           </div>
           <div>
-            <label for="f-role" class="mb-1 block text-sm font-bold">स्टैक / रोल</label>
-            <input id="f-role" type="text" value="Full-stack · React / Node" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
-          </div>
-          <div>
-            <label for="f-title" class="mb-1 block text-sm font-bold">builder title</label>
-            <div class="flex gap-2">
-              <input id="f-title" type="text" value="देर रात का कोडर" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
-              <button id="dice" type="button" title="नया title" class="shrink-0 rounded-xl border-[3px] border-ink bg-rose-300 px-4 font-extrabold shadow-brutSm transition hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">🎲</button>
-            </div>
+            <label for="f-role" class="mb-1 block text-sm font-bold">role</label>
+            <input id="f-role" type="text" value="Full-stack Developer" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
           </div>
         </div>
       </div>
@@ -282,10 +287,6 @@
             <label for="f-team-role" class="mb-1 block text-sm font-bold">team स्टैक</label>
             <input id="f-team-role" type="text" value="Next.js · Rust · a lot coffee" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
           </div>
-          <div id="member-fields" class="grid gap-2"></div>
-          <p id="member-empty" class="rounded-xl border-[3px] border-dashed border-ink/30 px-3.5 py-3 text-center text-xs font-bold text-ink/45">
-            photo डालो, हर member का नाम यहाँ आ जाएगा
-          </p>
         </div>
       </div>
 
@@ -310,8 +311,7 @@
         </span>
       </div>
 
-      <div class="stripe rounded-2xl p-2.5">
-        <div class="grid place-items-center rounded-xl bg-cream px-4 py-8 sm:py-12">
+      <div class="grid place-items-center px-4 py-8 sm:py-12">
 
           <!-- PFP output -->
           <div id="preview-pfp" class="relative aspect-square w-full max-w-[320px]">
@@ -326,41 +326,28 @@
             </div>
           </div>
 
-          <!-- ID card output -->
-          <div id="preview-card" class="hidden w-full max-w-[300px] overflow-hidden rounded-2xl border-[4px] border-ink shadow-brut">
-            <div class="flex items-center justify-between bg-rose-500 px-4 py-3">
-              <div>
-                <p class="font-display text-lg leading-none text-cream">HH गोवा ’26</p>
-                <p class="text-[10px] font-extrabold tracking-[0.2em] text-cream/80">BUILDER PASS</p>
+          <!-- ID card output — Frame-3 badge art with photo + text laid on top -->
+          <div id="preview-card" class="relative hidden w-full max-w-[300px]" style="aspect-ratio:3/4;">
+            <div class="photo-slot absolute overflow-hidden bg-cream" style="left:18%;top:21.75%;width:42.84%;height:42.5%;">
+              <div class="grid h-full w-full place-items-center">
+                <svg class="h-1/3 w-1/3 text-ink/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="9" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke-linecap="round"/></svg>
               </div>
-              <span class="rounded-md border-2 border-ink bg-neon-500 px-2 py-0.5 text-[10px] font-extrabold">2026</span>
             </div>
 
-            <div class="flex flex-col items-center gap-3 bg-sun-100 px-5 py-6">
-              <div class="photo-slot h-24 w-24 overflow-hidden rounded-xl border-[3px] border-ink bg-cream bg-cover bg-center">
-                <div class="grid h-full w-full place-items-center">
-                  <svg class="h-9 w-9 text-ink/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="9" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke-linecap="round"/></svg>
-                </div>
-              </div>
-              <p id="out-name" class="text-center font-display text-2xl leading-tight">आदित्य शर्मा</p>
-              <p id="out-role" class="-mt-2 text-center text-xs font-bold text-ink/60">Full-stack · React / Node</p>
-              <span id="out-title" class="rounded-full border-[3px] border-ink bg-rose-300 px-3.5 py-1 text-xs font-extrabold">देर रात का कोडर</span>
-            </div>
+            <img src="assets/frame-solo.png" alt="" draggable="false"
+              class="pointer-events-none absolute inset-0 h-full w-full select-none" />
 
-            <div class="flex items-center justify-between border-t-[3px] border-ink bg-sun-500 px-4 py-2">
-              <span class="flex items-center gap-1.5 text-[11px] font-extrabold">
-                <span class="h-1.5 w-1.5 rounded-full border border-ink bg-neon-500"></span>#FrameInGoa
-              </span>
-              <span class="flex gap-[3px]">
-                <i class="block h-3.5 w-[3px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i><i class="block h-3.5 w-[4px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i><i class="block h-3.5 w-[3px] bg-ink"></i><i class="block h-3.5 w-[2px] bg-ink"></i>
-              </span>
+            <div class="absolute flex items-center justify-center px-1 text-center" style="left:12.08%;top:68%;width:27.67%;height:12%;">
+              <p id="out-name" class="line-clamp-2 font-display text-base leading-tight text-ink sm:text-lg">आदित्य शर्मा</p>
+            </div>
+            <div class="absolute flex items-center justify-center px-1 text-center" style="left:39.75%;top:68%;width:27.25%;height:12%;">
+              <p id="out-role" class="line-clamp-2 font-hand text-[13px] font-bold leading-tight text-ink sm:text-base">CS26-1042</p>
             </div>
           </div>
 
           <!-- Team card output — contents rendered by ui.js, one layout per photo count -->
-          <div id="preview-team" class="hidden w-full max-w-[320px] overflow-hidden rounded-2xl border-[4px] border-ink shadow-brut"></div>
+          <div id="preview-team" class="hidden w-full max-w-[380px]"></div>
 
-        </div>
       </div>
 
       <p class="mt-5 text-center text-sm font-semibold text-cream/60">जो दिख रहा है वही download होगा — असली PNG फाइल</p>
@@ -488,8 +475,10 @@
         class="grid h-9 w-9 place-items-center rounded-xl border-[3px] border-ink bg-cream font-extrabold shadow-brutSm transition hover:bg-rose-300 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">✕</button>
     </div>
 
-    <div class="relative aspect-square overflow-hidden rounded-2xl border-[3px] border-ink bg-ink">
+    <div id="cam-stage" class="relative overflow-hidden rounded-2xl border-[3px] border-ink bg-ink" style="aspect-ratio:1/1;">
       <video id="cam-video" autoplay playsinline muted class="h-full w-full -scale-x-100 object-cover"></video>
+      <img id="cam-frame-overlay" src="assets/frame-solo.png" alt="" draggable="false"
+        class="pointer-events-none absolute inset-0 hidden h-full w-full select-none" />
       <div id="cam-flash" class="pointer-events-none absolute inset-0 bg-cream opacity-0 transition-opacity duration-200"></div>
       <p id="cam-error" class="absolute inset-0 hidden place-items-center p-6 text-center text-sm font-bold text-cream"></p>
     </div>

@@ -12,17 +12,61 @@
   const FILENAME = 'hh-goa-2026.png';
   const HASHTAGS = '#FrameInGoa #HHGoa2026';
 
-  /* Read off the running page rather than hardcoded, so it is localhost during
-     development and the deployed domain in production with no edit. */
-  const siteUrl = () => location.origin + location.pathname.replace(/\/index\.html$/, '/');
+  /* Hardcoded to the live deploy — shares should always point people there,
+     not at whatever origin (localhost, preview branch) the export ran on. */
+  const siteUrl = () => 'https://hh-goa-task-1-three.vercel.app/';
 
-  const caption = () => [
+  const caption = (url) => [
     `मेरा HH Goa 2026 बैज तैयार है ✦ ${HASHTAGS}`,
     '',
     'create your own Builder card',
-    siteUrl()
+    url
   ].join('\n');
   const INTENT = 'https://x.com/intent/post?text=';
+
+  /* Unsigned preset — safe to ship in client code, it can only accept image
+     uploads, nothing account-sensitive. Lets the exported badge get a real
+     public URL so X can actually unfurl the link with the photo embedded,
+     instead of everyone's share linking back to the same generic homepage. */
+  const CLOUDINARY_CLOUD_NAME = 'j4pvohqc';
+  const CLOUDINARY_UPLOAD_PRESET = 'hhgoa_shares';
+  const CARD_ENDPOINT = 'https://hh-goa-task-1-three.vercel.app/api/card';
+
+  async function uploadToCloudinary(blob) {
+    const form = new FormData();
+    form.append('file', blob, FILENAME);
+    form.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!res.ok) throw new Error(`cloudinary upload failed: ${res.status}`);
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  /* Whatever name is currently on the visible card — used as the /api/card
+     page title, purely cosmetic. */
+  function shareName() {
+    if (!$('#preview-card').classList.contains('hidden')) return $('#f-name').value.trim();
+    if (!$('#preview-team').classList.contains('hidden')) return $('#f-team').value.trim();
+    return '';
+  }
+
+  /* Falls back to the plain homepage link if the upload fails for any
+     reason (offline, preset misconfigured, Cloudinary hiccup) — sharing
+     should never hard-fail just because the rich-preview step did. */
+  async function getShareUrl(blob) {
+    try {
+      const secureUrl = await uploadToCloudinary(blob);
+      const params = new URLSearchParams({ img: secureUrl, name: shareName() });
+      return `${CARD_ENDPOINT}?${params.toString()}`;
+    } catch (err) {
+      console.error(err);
+      return siteUrl();
+    }
+  }
 
   /* background behind the card in the exported square, per format */
   const BG = { 'preview-pfp': '#FFF7E8', 'preview-card': '#FFF7E8', 'preview-team': '#FFF7E8' };
@@ -139,8 +183,10 @@
 
   /* ---------- share to X ----------
      Mobile: hand the file to the share sheet, which really does attach it.
-     Desktop: open the composer with the caption written and put the image on
-     the clipboard so it's one paste away — X can't take an image from a URL. */
+     Desktop: X's web intent can't take an image from a URL, so there's no
+     way to have the photo already sitting in the post — the file always
+     gets downloaded too, so it's on disk ready to drag/attach, on top of
+     being copied to the clipboard for a one-paste alternative. */
   btnShare.addEventListener('click', async () => {
     if (busy) return;
     setBusy(true, 'बन रहा है…');
@@ -148,9 +194,13 @@
       const blob = await renderBlob();
       const file = new File([blob], FILENAME, { type: 'image/png' });
 
+      setBusy(true, 'link तैयार हो रहा है…');
+      const shareUrl = await getShareUrl(blob);
+      const text = caption(shareUrl);
+
       if (canUseShareSheet(file)) {
         try {
-          await navigator.share({ files: [file], text: caption() });
+          await navigator.share({ files: [file], text });
           status('शेयर हो गया');
           return;
         } catch (err) {
@@ -160,20 +210,22 @@
       }
 
       const copied = await copyImage(blob);
-      if (!copied) saveBlob(blob);
+      saveBlob(blob);
 
-      const url = INTENT + encodeURIComponent(caption());
+      const url = INTENT + encodeURIComponent(text);
       const win = window.open(url, '_blank', 'noopener');
+
+      const downloadedNote = 'photo download हो गई — X पर attach कर दो';
 
       if (!win) {
         /* popup blocked — give them something to click instead */
         statusEl.innerHTML =
           `<a href="${url}" target="_blank" rel="noopener" class="font-extrabold text-rose-700 underline">X पे post लिखो →</a>` +
-          (copied ? ' · image clipboard में है' : ' · image download हो गई');
+          ` · ${downloadedNote}` + (copied ? ' (या paste ⌘V)' : '');
       } else {
         status(copied
-          ? 'X खुल गया — post में image paste कर दो (⌘V)'
-          : 'X खुल गया — download की image attach कर दो');
+          ? `X खुल गया — paste (⌘V) करो, या ${downloadedNote}`
+          : `X खुल गया — ${downloadedNote}`);
       }
     } catch (err) {
       console.error(err);
