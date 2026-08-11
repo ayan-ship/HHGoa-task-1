@@ -51,10 +51,14 @@
       </span>
     </div>`;
 
-  function photoTile(url, cls) {
-    return url
-      ? `<div class="photo-slot overflow-hidden rounded-xl border-[3px] border-ink bg-cream ${cls}">
-           <img src="${esc(url)}" alt="" class="photo-img h-full w-full origin-center object-cover" />
+  /* A filled tile is draggable: object-position does the panning, which clamps
+     itself to the cover-crop overflow so the photo can never leave a gap. */
+  function photoTile(photo, idx, cls) {
+    return photo
+      ? `<div class="photo-slot cursor-grab touch-none overflow-hidden rounded-xl border-[3px] border-ink bg-cream ${cls}" data-idx="${idx}">
+           <img src="${esc(photo.url)}" alt="" draggable="false"
+             class="photo-img h-full w-full origin-center select-none object-cover"
+             style="object-position:${photo.px}% ${photo.py}%" />
          </div>`
       : `<div class="photo-slot grid place-items-center overflow-hidden rounded-xl border-[3px] border-ink bg-cream ${cls}">${PERSON_SVG}</div>`;
   }
@@ -67,7 +71,7 @@
     1: (d) => header('TEAM PASS') + `
       <div class="flex flex-col items-center gap-3 bg-sun-100 px-5 py-6">
         <div class="flex flex-col items-center">
-          ${photoTile(d.photos[0]?.url, 'h-28 w-28')}
+          ${photoTile(d.photos[0], 0, 'h-28 w-28')}
           ${nameTag(d.members[0])}
         </div>
         <p class="text-center font-display text-2xl leading-tight">${esc(d.team)}</p>
@@ -81,7 +85,7 @@
         <div class="flex w-full items-start justify-center gap-3">
           ${[0, 1].map((i) => `
             <div class="flex min-w-0 flex-1 flex-col items-center">
-              ${photoTile(d.photos[i]?.url, 'aspect-square w-full')}
+              ${photoTile(d.photos[i], i, 'aspect-square w-full')}
               ${nameTag(d.members[i])}
             </div>`).join('')}
         </div>
@@ -96,7 +100,7 @@
         <div class="flex w-full items-start justify-center gap-2">
           ${[0, 1, 2].map((i) => `
             <div class="flex min-w-0 flex-1 flex-col items-center">
-              ${photoTile(d.photos[i]?.url, 'aspect-square w-full')}
+              ${photoTile(d.photos[i], i, 'aspect-square w-full')}
               ${nameTag(d.members[i])}
             </div>`).join('')}
         </div>
@@ -129,10 +133,10 @@
 
     const isTeam = name === 'team';
     $('#file-input').multiple = isTeam;
-    $('#dropzone-title').textContent = isTeam ? '3 फोटो तक डालो' : 'फोटो यहाँ खींचो';
+    $('#dropzone-title').textContent = isTeam ? 'Upload up to 3' : 'Upload here';
     $('#dropzone-hint').textContent = isTeam
-      ? 'हर मेंबर की एक — JPG · PNG · HEIC'
-      : 'JPG · PNG · HEIC — कोई भी crop चलेगा';
+      ? 'One per member — JPG · PNG · HEIC'
+      : 'JPG · PNG · HEIC — any crop will do';
 
     /* dropping from team → solo leaves at most one photo */
     state.photos.splice(MAX_PHOTOS[name]).forEach((p) => URL.revokeObjectURL(p.url));
@@ -180,7 +184,8 @@
     for (const file of picked) {
       try {
         const usable = await decode(file);
-        state.photos.push({ url: URL.createObjectURL(usable), file: usable });
+        /* px/py are the object-position crop, 50/50 = centred */
+        state.photos.push({ url: URL.createObjectURL(usable), file: usable, px: 50, py: 50 });
       } catch (err) {
         console.error(err);
         status.textContent = 'ये फोटो नहीं खुली — दूसरी try करो';
@@ -248,15 +253,85 @@
 
   /* pfp + solo card share a single photo */
   function renderSingleSlots() {
-    const url = state.photos[0]?.url;
+    const photo = state.photos[0];
     ['#preview-pfp .photo-slot', '#preview-card .photo-slot'].forEach((sel) => {
       const slot = $(sel);
       if (!slot) return;
-      slot.innerHTML = url
-        ? `<img src="${esc(url)}" alt="" class="photo-img h-full w-full origin-center object-cover" />`
-        : `<div class="grid h-full w-full place-items-center">${PERSON_SVG}</div>`;
+      slot.classList.toggle('cursor-grab', !!photo);
+      slot.classList.toggle('touch-none', !!photo);
+      if (photo) {
+        slot.dataset.idx = '0';
+        slot.innerHTML =
+          `<img src="${esc(photo.url)}" alt="" draggable="false"
+             class="photo-img h-full w-full origin-center select-none object-cover"
+             style="object-position:${photo.px}% ${photo.py}%" />`;
+      } else {
+        delete slot.dataset.idx;
+        slot.innerHTML = `<div class="grid h-full w-full place-items-center">${PERSON_SVG}</div>`;
+      }
     });
   }
+
+  /* =================== drag to reposition =================== */
+
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  /* How many px of the photo are hidden by the cover crop, per axis.
+     Zero on an axis means that axis is already flush — nothing to drag. */
+  function overflowOf(img, slot) {
+    const sw = slot.clientWidth, sh = slot.clientHeight;
+    const nw = img.naturalWidth, nh = img.naturalHeight;
+    if (!nw || !nh || !sw || !sh) return { x: 0, y: 0 };
+    const s = Math.max(sw / nw, sh / nh);
+    return { x: Math.max(0, nw * s - sw), y: Math.max(0, nh * s - sh) };
+  }
+
+  /* one photo can be on screen in several slots at once (pfp + solo) */
+  function applyPosition(idx) {
+    const photo = state.photos[idx];
+    if (!photo) return;
+    $$(`.photo-slot[data-idx="${idx}"] .photo-img`).forEach((img) => {
+      img.style.objectPosition = `${photo.px}% ${photo.py}%`;
+    });
+  }
+
+  let drag = null;
+
+  document.addEventListener('pointerdown', (e) => {
+    const slot = e.target.closest?.('.photo-slot[data-idx]');
+    if (!slot) return;
+    const img = slot.querySelector('.photo-img');
+    const idx = Number(slot.dataset.idx);
+    const photo = state.photos[idx];
+    if (!img || !photo) return;
+
+    drag = {
+      slot, idx, photo,
+      x: e.clientX, y: e.clientY,
+      px: photo.px, py: photo.py,
+      ov: overflowOf(img, slot)
+    };
+    try { slot.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
+    slot.classList.add('cursor-grabbing');
+    e.preventDefault();
+  });
+
+  document.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const { ov } = drag;
+    /* drag right reveals more of the photo's left side, hence the minus */
+    if (ov.x > 0) drag.photo.px = clamp(drag.px - (e.clientX - drag.x) / ov.x * 100, 0, 100);
+    if (ov.y > 0) drag.photo.py = clamp(drag.py - (e.clientY - drag.y) / ov.y * 100, 0, 100);
+    applyPosition(drag.idx);
+  });
+
+  function endDrag() {
+    if (!drag) return;
+    drag.slot.classList.remove('cursor-grabbing');
+    drag = null;
+  }
+  document.addEventListener('pointerup', endDrag);
+  document.addEventListener('pointercancel', endDrag);
 
   function renderTeam() {
     const count = Math.min(state.photos.length, 3) || 1;   /* empty state previews the 1-up */
@@ -307,7 +382,7 @@
   const TITLES = [
     'देर रात का कोडर', 'बग का दुश्मन', 'कॉफ़ी से चलने वाला',
     'डिप्लॉय मास्टर', 'CSS जादूगर', 'लास्ट-मिनट शिपर',
-    'टर्मिनल का राजा', 'सुसेगाद बिल्डर', 'रिफैक्टर पंडित'
+    'टर्मिनल का राजा', 'susegaad बिल्डर', 'रिफैक्टर पंडित'
   ];
   let seen = 0;
   $('#dice').addEventListener('click', () => {

@@ -141,7 +141,7 @@
 
     <!-- hero preview stack -->
     <div class="relative mx-auto w-full max-w-md">
-      <span class="floaty absolute -left-2 top-2 z-20 rotate-[-8deg] rounded-full border-[3px] border-ink bg-sun-500 px-4 py-1.5 font-hand text-sm font-bold shadow-brutSm" style="--r:-8deg">सुसेगाद ✦</span>
+      <span class="floaty absolute -left-2 top-2 z-20 rotate-[-8deg] rounded-full border-[3px] border-ink bg-sun-500 px-4 py-1.5 font-hand text-sm font-bold shadow-brutSm" style="--r:-8deg">susegaad ✦</span>
       <span class="floaty absolute -right-1 bottom-6 z-20 rotate-[7deg] rounded-full border-[3px] border-ink bg-rose-300 px-4 py-1.5 font-hand text-sm font-bold shadow-brutSm" style="--r:7deg; animation-delay:1.2s">एक क्लिक में</span>
 
       <div class="rotate-[-2deg] rounded-[2rem] border-[4px] border-ink bg-sun-100 p-5 shadow-brutLg sm:p-7">
@@ -204,14 +204,14 @@
 
       <!-- dropzone -->
       <div class="mb-2.5 flex items-center justify-between">
-        <p class="text-sm font-extrabold uppercase tracking-wider text-ink/60">photo डालो</p>
+        <p class="text-sm font-extrabold uppercase tracking-wider text-ink/60">Upload photo</p>
         <span id="photo-count" class="rounded-full border-2 border-ink bg-cream px-2.5 py-0.5 font-mono text-xs font-bold">0 / 1</span>
       </div>
       <label id="dropzone" for="file-input" class="group mb-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-[3px] border-dashed border-ink bg-sun-100 px-6 py-10 text-center transition hover:bg-sun-300">
         <span class="grid h-12 w-12 place-items-center rounded-xl border-[3px] border-ink bg-rose-500 shadow-brutSm transition group-hover:rotate-6">
           <svg class="h-6 w-6 text-cream" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V5M6 11l6-6 6 6"/><path d="M4 19h16"/></svg>
         </span>
-        <span id="dropzone-title" class="font-display text-2xl">Upload photo</span>
+        <span id="dropzone-title" class="font-display text-2xl">Upload here</span>
         <span id="dropzone-hint" class="text-sm font-semibold text-ink/60">JPG · PNG · HEIC — any crop will do</span>
         <input id="file-input" type="file" accept="image/*,.heic,.heif" class="hidden" />
       </label>
@@ -234,11 +234,15 @@
           </div>
           <input id="rotate" type="range" min="-30" max="30" value="0" step="1" class="w-full" />
         </div>
+        <p class="flex items-center gap-1.5 border-t-2 border-ink/10 pt-3 text-xs font-bold text-ink/55">
+          <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+          preview में photo को drag करके सेट करो
+        </p>
       </div>
 
       <!-- fields: solo -->
       <div id="solo-fields">
-        <p class="mb-2.5 text-sm font-extrabold uppercase tracking-wider text-ink/60">डिटेल्स</p>
+        <p class="mb-2.5 text-sm font-extrabold uppercase tracking-wider text-ink/60">details</p>
         <div class="mb-7 grid gap-3">
           <div>
             <label for="f-name" class="mb-1 block text-sm font-bold">नाम</label>
@@ -260,19 +264,19 @@
 
       <!-- fields: team -->
       <div id="team-fields" class="hidden">
-        <p class="mb-2.5 text-sm font-extrabold uppercase tracking-wider text-ink/60">team डिटेल्स</p>
+        <p class="mb-2.5 text-sm font-extrabold uppercase tracking-wider text-ink/60">team details</p>
         <div class="mb-7 grid gap-3">
           <div>
             <label for="f-team" class="mb-1 block text-sm font-bold">team का नाम</label>
-            <input id="f-team" type="text" value="सुसेगाद स्क्वाड" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
+            <input id="f-team" type="text" value="susegaad स्क्वाड" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
           </div>
           <div>
             <label for="f-team-role" class="mb-1 block text-sm font-bold">team स्टैक</label>
-            <input id="f-team-role" type="text" value="Next.js · Rust · बहुत सारी कॉफ़ी" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
+            <input id="f-team-role" type="text" value="Next.js · Rust · a lot coffee" class="w-full rounded-xl border-[3px] border-ink bg-cream px-3.5 py-2.5 font-semibold outline-none transition focus:bg-sun-100 focus:shadow-brutSm" />
           </div>
           <div id="member-fields" class="grid gap-2"></div>
           <p id="member-empty" class="rounded-xl border-[3px] border-dashed border-ink/30 px-3.5 py-3 text-center text-xs font-bold text-ink/45">
-            photo डालो, हर मेंबर का नाम यहाँ आ जाएगा
+            photo डालो, हर member का नाम यहाँ आ जाएगा
           </p>
         </div>
       </div>
