@@ -11,7 +11,7 @@
   const PAD = { 'preview-pfp': 48, 'preview-card': 90, 'preview-team': 90 };
   const FILENAME = 'hh-goa-2026.png';
   const CAPTION = 'मेरा HH Goa 2026 बैज तैयार है ✦ बना लो अपना भी — #FrameInGoa';
-  const INTENT = 'https://twitter.com/intent/tweet?text=';
+  const INTENT = 'https://x.com/intent/post?text=';
 
   /* background behind the card in the exported square, per format */
   const BG = { 'preview-pfp': '#FFF7E8', 'preview-card': '#FFF7E8', 'preview-team': '#FFF7E8' };
@@ -105,10 +105,31 @@
     }
   });
 
+  /* The OS share sheet is only worth using where a real X app can receive the
+     file. Desktop Safari reports canShare({files}) === true, but its sheet has
+     no X target at all — so require an actual touch device. */
+  function canUseShareSheet(file) {
+    const touchDevice =
+      window.matchMedia('(pointer: coarse)').matches && navigator.maxTouchPoints > 0;
+    return touchDevice && !!navigator.canShare && navigator.canShare({ files: [file] });
+  }
+
+  /* Must run while our tab still has focus — clipboard writes are rejected
+     once another window takes over, so this happens before X is opened. */
+  async function copyImage(blob) {
+    if (!navigator.clipboard || typeof ClipboardItem === 'undefined') return false;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   /* ---------- share to X ----------
-     Web Share attaches the actual file (mobile). Everywhere else the tweet
-     composer can't take an image from a URL, so we hand over the file and
-     open the composer with the caption already written. */
+     Mobile: hand the file to the share sheet, which really does attach it.
+     Desktop: open the composer with the caption written and put the image on
+     the clipboard so it's one paste away — X can't take an image from a URL. */
   btnShare.addEventListener('click', async () => {
     if (busy) return;
     setBusy(true, 'बन रहा है…');
@@ -116,7 +137,7 @@
       const blob = await renderBlob();
       const file = new File([blob], FILENAME, { type: 'image/png' });
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (canUseShareSheet(file)) {
         try {
           await navigator.share({ files: [file], text: CAPTION });
           status('शेयर हो गया');
@@ -127,9 +148,22 @@
         }
       }
 
-      saveBlob(blob);
-      window.open(INTENT + encodeURIComponent(CAPTION), '_blank', 'noopener,noreferrer');
-      status('इमेज डाउनलोड हो गई — X पे बस attach कर दो');
+      const copied = await copyImage(blob);
+      if (!copied) saveBlob(blob);
+
+      const url = INTENT + encodeURIComponent(CAPTION);
+      const win = window.open(url, '_blank', 'noopener');
+
+      if (!win) {
+        /* popup blocked — give them something to click instead */
+        statusEl.innerHTML =
+          `<a href="${url}" target="_blank" rel="noopener" class="font-extrabold text-rose-700 underline">X पे post लिखो →</a>` +
+          (copied ? ' · image clipboard में है' : ' · image download हो गई');
+      } else {
+        status(copied
+          ? 'X खुल गया — post में image paste कर दो (⌘V)'
+          : 'X खुल गया — download की image attach कर दो');
+      }
     } catch (err) {
       console.error(err);
       status('कुछ गड़बड़ हो गई, दोबारा कोशिश करो');
