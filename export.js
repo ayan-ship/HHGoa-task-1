@@ -16,13 +16,57 @@
      not at whatever origin (localhost, preview branch) the export ran on. */
   const siteUrl = () => 'https://hh-goa-task-1-three.vercel.app/';
 
-  const caption = () => [
+  const caption = (url) => [
     `मेरा HH Goa 2026 बैज तैयार है ✦ ${HASHTAGS}`,
     '',
     'create your own Builder card',
-    siteUrl()
+    url
   ].join('\n');
   const INTENT = 'https://x.com/intent/post?text=';
+
+  /* Unsigned preset — safe to ship in client code, it can only accept image
+     uploads, nothing account-sensitive. Lets the exported badge get a real
+     public URL so X can actually unfurl the link with the photo embedded,
+     instead of everyone's share linking back to the same generic homepage. */
+  const CLOUDINARY_CLOUD_NAME = 'j4pvohqc';
+  const CLOUDINARY_UPLOAD_PRESET = 'hhgoa_shares';
+  const CARD_ENDPOINT = 'https://hh-goa-task-1-three.vercel.app/api/card';
+
+  async function uploadToCloudinary(blob) {
+    const form = new FormData();
+    form.append('file', blob, FILENAME);
+    form.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!res.ok) throw new Error(`cloudinary upload failed: ${res.status}`);
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  /* Whatever name is currently on the visible card — used as the /api/card
+     page title, purely cosmetic. */
+  function shareName() {
+    if (!$('#preview-card').classList.contains('hidden')) return $('#f-name').value.trim();
+    if (!$('#preview-team').classList.contains('hidden')) return $('#f-team').value.trim();
+    return '';
+  }
+
+  /* Falls back to the plain homepage link if the upload fails for any
+     reason (offline, preset misconfigured, Cloudinary hiccup) — sharing
+     should never hard-fail just because the rich-preview step did. */
+  async function getShareUrl(blob) {
+    try {
+      const secureUrl = await uploadToCloudinary(blob);
+      const params = new URLSearchParams({ img: secureUrl, name: shareName() });
+      return `${CARD_ENDPOINT}?${params.toString()}`;
+    } catch (err) {
+      console.error(err);
+      return siteUrl();
+    }
+  }
 
   /* background behind the card in the exported square, per format */
   const BG = { 'preview-pfp': '#FFF7E8', 'preview-card': '#FFF7E8', 'preview-team': '#FFF7E8' };
@@ -150,9 +194,13 @@
       const blob = await renderBlob();
       const file = new File([blob], FILENAME, { type: 'image/png' });
 
+      setBusy(true, 'link तैयार हो रहा है…');
+      const shareUrl = await getShareUrl(blob);
+      const text = caption(shareUrl);
+
       if (canUseShareSheet(file)) {
         try {
-          await navigator.share({ files: [file], text: caption() });
+          await navigator.share({ files: [file], text });
           status('शेयर हो गया');
           return;
         } catch (err) {
@@ -164,7 +212,7 @@
       const copied = await copyImage(blob);
       saveBlob(blob);
 
-      const url = INTENT + encodeURIComponent(caption());
+      const url = INTENT + encodeURIComponent(text);
       const win = window.open(url, '_blank', 'noopener');
 
       const downloadedNote = 'photo download हो गई — X पर attach कर दो';
