@@ -224,8 +224,11 @@
       btn.addEventListener('click', () => removePhoto(Number(btn.dataset.remove)));
     });
 
-    /* hide the dropzone once full */
-    $('#dropzone').classList.toggle('hidden', state.photos.length >= max);
+    /* hide both intake controls once full */
+    const full = state.photos.length >= max;
+    $('#dropzone').classList.toggle('hidden', full);
+    $('#btn-camera').classList.toggle('hidden', full);
+    $('#btn-camera').classList.toggle('flex', !full);
   }
 
   /* one name input per uploaded photo */
@@ -248,6 +251,113 @@
       });
     });
   }
+
+  /* =================== camera =================== */
+
+  const cam = {
+    modal: $('#cam-modal'),
+    video: $('#cam-video'),
+    error: $('#cam-error'),
+    count: $('#cam-count'),
+    shoot: $('#cam-shoot'),
+    flash: $('#cam-flash'),
+    hint:  $('#cam-hint'),
+    stream: null
+  };
+
+  function camFull() {
+    return state.photos.length >= MAX_PHOTOS[state.format];
+  }
+
+  function syncCam() {
+    const max = MAX_PHOTOS[state.format];
+    cam.count.textContent = `${state.photos.length} / ${max}`;
+    cam.shoot.disabled = !cam.stream || camFull();
+    cam.hint.textContent = max > 1
+      ? 'Capture one photo per team member'
+      : 'One photo is all you need';
+  }
+
+  async function openCamera() {
+    if (camFull()) return;
+    cam.modal.classList.remove('hidden');
+    cam.modal.classList.add('flex');
+    cam.error.classList.add('hidden');
+    cam.error.classList.remove('grid');
+    syncCam();
+
+    try {
+      cam.stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 1280 } },
+        audio: false
+      });
+      cam.video.srcObject = cam.stream;
+    } catch (err) {
+      cam.error.textContent = err.name === 'NotAllowedError'
+        ? 'Camera blocked. Allow camera access for this site and try again.'
+        : 'No camera available on this device.';
+      cam.error.classList.remove('hidden');
+      cam.error.classList.add('grid');
+    }
+    syncCam();
+  }
+
+  /* Tracks must be stopped explicitly or the camera light stays on. */
+  function closeCamera() {
+    cam.stream?.getTracks().forEach((t) => t.stop());
+    cam.stream = null;
+    cam.video.srcObject = null;
+    cam.modal.classList.add('hidden');
+    cam.modal.classList.remove('flex');
+  }
+
+  function flash() {
+    cam.flash.style.opacity = '0.9';
+    setTimeout(() => { cam.flash.style.opacity = '0'; }, 120);
+  }
+
+  /* Guarded because capture is async: without it a second click can land while
+     the first is still encoding, and the two runs interleave. */
+  let shooting = false;
+
+  async function capture() {
+    if (shooting || !cam.stream || camFull()) return;
+    const v = cam.video;
+    const w = v.videoWidth, h = v.videoHeight;
+    if (!w || !h) return;
+
+    shooting = true;
+    cam.shoot.disabled = true;
+    try {
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      /* flip to match the mirrored preview — otherwise the saved shot is
+         reversed from what the user just posed for */
+      ctx.translate(w, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(v, 0, 0, w, h);
+
+      const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.92));
+      if (!blob) return;
+
+      flash();
+      await addFiles([new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' })]);
+    } finally {
+      shooting = false;
+      syncCam();
+    }
+    if (camFull()) closeCamera();          /* nothing left to shoot */
+  }
+
+  $('#btn-camera').addEventListener('click', openCamera);
+  $('#cam-close').addEventListener('click', closeCamera);
+  $('#cam-done').addEventListener('click', closeCamera);
+  cam.shoot.addEventListener('click', capture);
+  cam.modal.addEventListener('click', (e) => { if (e.target === cam.modal) closeCamera(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && cam.stream) closeCamera();
+  });
 
   /* =================== previews =================== */
 

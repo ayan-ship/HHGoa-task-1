@@ -216,6 +216,14 @@
         <input id="file-input" type="file" accept="image/*,.heic,.heif" class="hidden" />
       </label>
 
+      <button id="btn-camera" type="button"
+        class="mb-3 flex w-full items-center justify-center gap-2 rounded-2xl border-[3px] border-ink bg-cream px-4 py-3 text-base font-extrabold shadow-brutSm transition hover:-translate-y-0.5 hover:bg-neon-300 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8.5h3l1.5-2h9L18 8.5h3v11H3z" /><circle cx="12" cy="13.5" r="3.2" />
+        </svg>
+        Take a selfie
+      </button>
+
       <!-- uploaded photo tray -->
       <div id="photo-tray" class="mb-7 hidden flex-wrap gap-2"></div>
 
@@ -470,6 +478,38 @@
     </div>
   </div>
 </footer>
+
+<!-- ============ CAMERA ============ -->
+<div id="cam-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-ink/80 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-md rounded-[2rem] border-[4px] border-ink bg-cream p-4 shadow-brutLg sm:p-5">
+    <div class="mb-3 flex items-center justify-between">
+      <p class="font-display text-2xl">Take a selfie</p>
+      <button id="cam-close" type="button" aria-label="Close"
+        class="grid h-9 w-9 place-items-center rounded-xl border-[3px] border-ink bg-cream font-extrabold shadow-brutSm transition hover:bg-rose-300 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">✕</button>
+    </div>
+
+    <div class="relative aspect-square overflow-hidden rounded-2xl border-[3px] border-ink bg-ink">
+      <video id="cam-video" autoplay playsinline muted class="h-full w-full -scale-x-100 object-cover"></video>
+      <div id="cam-flash" class="pointer-events-none absolute inset-0 bg-cream opacity-0 transition-opacity duration-200"></div>
+      <p id="cam-error" class="absolute inset-0 hidden place-items-center p-6 text-center text-sm font-bold text-cream"></p>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between gap-3">
+      <span id="cam-count" class="rounded-full border-2 border-ink bg-cream px-3 py-1 font-mono text-xs font-bold">0 / 1</span>
+      <div class="flex gap-2">
+        <button id="cam-shoot" type="button"
+          class="rounded-xl border-[3px] border-ink bg-rose-500 px-5 py-2.5 text-base font-extrabold shadow-brutSm transition hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50">
+          Capture
+        </button>
+        <button id="cam-done" type="button"
+          class="rounded-xl border-[3px] border-ink bg-sun-500 px-5 py-2.5 text-base font-extrabold shadow-brutSm transition hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
+          Done
+        </button>
+      </div>
+    </div>
+    <p id="cam-hint" class="mt-2.5 text-center text-xs font-semibold text-ink/50">Capture one photo per team member</p>
+  </div>
+</div>
 
 <!-- offscreen 1080x1080 canvas the exporter composes into.
      The offset lives on the holder: html-to-image copies the captured node's own

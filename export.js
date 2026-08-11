@@ -10,7 +10,18 @@
      Its 48px still clears the badge and sticker that overhang the node's box. */
   const PAD = { 'preview-pfp': 48, 'preview-card': 90, 'preview-team': 90 };
   const FILENAME = 'hh-goa-2026.png';
-  const CAPTION = 'मेरा HH Goa 2026 बैज तैयार है ✦ बना लो अपना भी — #FrameInGoa';
+  const HASHTAGS = '#FrameInGoa #HHGoa2026';
+
+  /* Read off the running page rather than hardcoded, so it is localhost during
+     development and the deployed domain in production with no edit. */
+  const siteUrl = () => location.origin + location.pathname.replace(/\/index\.html$/, '/');
+
+  const caption = () => [
+    `मेरा HH Goa 2026 बैज तैयार है ✦ ${HASHTAGS}`,
+    '',
+    'create your own Builder card',
+    siteUrl()
+  ].join('\n');
   const INTENT = 'https://x.com/intent/post?text=';
 
   /* background behind the card in the exported square, per format */
@@ -139,7 +150,7 @@
 
       if (canUseShareSheet(file)) {
         try {
-          await navigator.share({ files: [file], text: CAPTION });
+          await navigator.share({ files: [file], text: caption() });
           status('शेयर हो गया');
           return;
         } catch (err) {
@@ -151,7 +162,7 @@
       const copied = await copyImage(blob);
       if (!copied) saveBlob(blob);
 
-      const url = INTENT + encodeURIComponent(CAPTION);
+      const url = INTENT + encodeURIComponent(caption());
       const win = window.open(url, '_blank', 'noopener');
 
       if (!win) {
