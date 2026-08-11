@@ -139,8 +139,10 @@
 
   /* ---------- share to X ----------
      Mobile: hand the file to the share sheet, which really does attach it.
-     Desktop: open the composer with the caption written and put the image on
-     the clipboard so it's one paste away — X can't take an image from a URL. */
+     Desktop: X's web intent can't take an image from a URL, so there's no
+     way to have the photo already sitting in the post — the file always
+     gets downloaded too, so it's on disk ready to drag/attach, on top of
+     being copied to the clipboard for a one-paste alternative. */
   btnShare.addEventListener('click', async () => {
     if (busy) return;
     setBusy(true, 'बन रहा है…');
@@ -160,20 +162,22 @@
       }
 
       const copied = await copyImage(blob);
-      if (!copied) saveBlob(blob);
+      saveBlob(blob);
 
       const url = INTENT + encodeURIComponent(caption());
       const win = window.open(url, '_blank', 'noopener');
+
+      const downloadedNote = 'photo download हो गई — X पर attach कर दो';
 
       if (!win) {
         /* popup blocked — give them something to click instead */
         statusEl.innerHTML =
           `<a href="${url}" target="_blank" rel="noopener" class="font-extrabold text-rose-700 underline">X पे post लिखो →</a>` +
-          (copied ? ' · image clipboard में है' : ' · image download हो गई');
+          ` · ${downloadedNote}` + (copied ? ' (या paste ⌘V)' : '');
       } else {
         status(copied
-          ? 'X खुल गया — post में image paste कर दो (⌘V)'
-          : 'X खुल गया — download की image attach कर दो');
+          ? `X खुल गया — paste (⌘V) करो, या ${downloadedNote}`
+          : `X खुल गया — ${downloadedNote}`);
       }
     } catch (err) {
       console.error(err);
